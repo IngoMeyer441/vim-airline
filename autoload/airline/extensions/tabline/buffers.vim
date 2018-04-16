@@ -58,7 +58,6 @@ function! airline#extensions#tabline#buffers#get()
     endif
   endif
 
-  let index = 1
   let b = airline#extensions#tabline#new_builder()
   let tab_bufs = tabpagebuflist(tabpagenr())
   let show_buf_label_first = 0
@@ -108,7 +107,9 @@ function! airline#extensions#tabline#buffers#get()
     let bufnum = get(self.buffers, a:i, -1)
     let group = self.get_group(a:i)
     let pgroup = self.get_group(a:i - 1)
-    if get(g:, 'airline_powerline_fonts', 0)
+    " always add a space when powerline_fonts are used
+    " or for the very first item
+    if get(g:, 'airline_powerline_fonts', 0) || a:i == 0
       let space = s:spc
     else
       let space= (pgroup == group ? s:spc : '')
@@ -116,9 +117,9 @@ function! airline#extensions#tabline#buffers#get()
 
     if get(g:, 'airline#extensions#tabline#buffer_idx_mode', 0)
       if len(s:number_map) > 0
-        return space. get(s:number_map, a:i, '') . '%(%{airline#extensions#tabline#get_buffer_name('.bufnum.')}%)' . s:spc
+        return space. get(s:number_map, a:i+1, '') . '%(%{airline#extensions#tabline#get_buffer_name('.bufnum.')}%)' . s:spc
       else
-        return '['.a:i.s:spc.'%(%{airline#extensions#tabline#get_buffer_name('.bufnum.')}%)'.']'
+        return '['.(a:i+1).s:spc.'%(%{airline#extensions#tabline#get_buffer_name('.bufnum.')}%)'.']'
       endif
     else
       return space.'%(%{airline#extensions#tabline#get_buffer_name('.bufnum.')}%)'.s:spc
