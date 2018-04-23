@@ -904,6 +904,10 @@ Main features and default mappings of this extension are:
 >
   let g:xtabline_alt_action = "buffer #"
 
+Make sure to enable >
+  :let g:airline_extensions#tabline#show_buffers = 1
+otherwise the tabline might not actually be displayed correctly.
+
 -----------------------------------------------------------------------------
 
 You may also set these options:
@@ -994,6 +998,15 @@ vim-xkblayout
 
 * enable/disable vim-xkblayout extension >
   let g:airline#extensions#xkblayout#enabled = 1
+
+* redefine keyboard layout short codes to shown in status >
+  let g:airline#extensions#xkblayout#short_codes = {'Russian-Phonetic': 'RU', 'ABC': 'EN'}
+<
+  'RU' instead of system 'Russian-Phonetic',
+  'EN' instead of system 'ABC'.
+
+  Default: >
+  let g:airline#extensions#xkblayout#short_codes = {'2SetKorean': 'KR', 'Chinese': 'CN', 'Japanese': 'JP'}
 
 * define path to the backend switcher library
   Linux (Install https://github.com/ierton/xkb-switch): >

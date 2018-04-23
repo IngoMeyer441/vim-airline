@@ -10,15 +10,14 @@ endif
 function! airline#extensions#xkblayout#status()
   let l:keyboard_layout = libcall(g:XkbSwitchLib, 'Xkb_Switch_getXkbLayout', '')
   let l:keyboard_layout = split(l:keyboard_layout, '\.')[-1]
-
-  let l:short_codes = {
-    \ '2SetKorean': 'KR',
-    \ 'Chinese': 'CN',
-    \ 'Japanese': 'JP',
-    \ 'USwithumlauts': 'US',
-    \ 'us_with_umlauts': 'US',
-    \ 'German': 'DE',
-    \ }
+  let l:short_codes = get(g:, 'airline#extensions#xkblayout#short_codes', {
+        \ '2SetKorean': 'KR',
+        \ 'Chinese': 'CN',
+        \ 'Japanese': 'JP',
+        \ 'USwithumlauts': 'US',
+        \ 'us_with_umlauts': 'US',
+        \ 'German': 'DE',
+        \ })
 
   " remove extra information in parentheses
   let l:keyboard_layout = substitute(l:keyboard_layout, '\v\(.*\)', '', '')
