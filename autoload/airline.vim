@@ -68,7 +68,7 @@ function! airline#switch_theme(name)
   let w:airline_lastmode = ''
   call airline#load_theme()
 
-  silent doautocmd User AirlineAfterTheme
+  call airline#util#doautocmd('AirlineAfterTheme')
 
   " this is required to prevent clobbering the startup info message, i don't know why...
   call airline#check_mode(winnr())
@@ -103,14 +103,9 @@ function! airline#update_statusline()
   if airline#util#getwinvar(winnr(), 'airline_disabled', 0)
     return
   endif
-  for nr in filter(range(1, winnr('$')), 'v:val != winnr()')
-    if airline#util#getwinvar(nr, 'airline_disabled', 0)
-      continue
-    endif
-    call setwinvar(nr, 'airline_active', 0)
-    let context = { 'winnr': nr, 'active': 0, 'bufnr': winbufnr(nr) }
-    call s:invoke_funcrefs(context, s:inactive_funcrefs)
-  endfor
+  let range = filter(range(1, winnr('$')), 'v:val != winnr()')
+  " create inactive statusline
+  call airline#update_statusline_inactive(range)
 
   unlet! w:airline_render_left w:airline_render_right
   exe 'unlet! ' 'w:airline_section_'. join(s:sections, ' w:airline_section_')
@@ -118,6 +113,20 @@ function! airline#update_statusline()
   let w:airline_active = 1
   let context = { 'winnr': winnr(), 'active': 1, 'bufnr': winbufnr(winnr()) }
   call s:invoke_funcrefs(context, g:airline_statusline_funcrefs)
+endfunction
+
+function! airline#update_statusline_inactive(range)
+  if airline#util#getwinvar(winnr(), 'airline_disabled', 0)
+    return
+  endif
+  for nr in a:range
+    if airline#util#getwinvar(nr, 'airline_disabled', 0)
+      continue
+    endif
+    call setwinvar(nr, 'airline_active', 0)
+    let context = { 'winnr': nr, 'active': 0, 'bufnr': winbufnr(nr) }
+    call s:invoke_funcrefs(context, s:inactive_funcrefs)
+  endfor
 endfunction
 
 let s:contexts = {}
@@ -203,7 +212,7 @@ function! airline#check_mode(winnr)
   if get(w:, 'airline_lastmode', '') != mode_string
     call airline#highlighter#highlight_modified_inactive(context.bufnr)
     call airline#highlighter#highlight(l:mode, context.bufnr)
-    silent doautocmd User AirlineModeChanged
+    call airline#util#doautocmd('AirlineModeChanged')
     let w:airline_lastmode = mode_string
   endif
 
