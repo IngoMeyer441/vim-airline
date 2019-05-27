@@ -203,12 +203,27 @@ values):
   statusline modified >
   let g:airline_exclude_filetypes = [] " see source for current list
 <
+* define the set of names to be displayed instead of a specific filetypes (for
+  section a and b): >
+
+  let g:airline_filetype_overrides = {
+      \ 'defx':  ['defx', '%{b:defx.paths[0]}'],
+      \ 'gundo': [ 'Gundo', '' ],
+      \ 'help':  [ 'Help', '%f' ],
+      \ 'minibufexpl': [ 'MiniBufExplorer', '' ],
+      \ 'nerdtree': [ get(g:, 'NERDTreeStatusline', 'NERD'), '' ],
+      \ 'startify': [ 'startify', '' ],
+      \ 'vim-plug': [ 'Plugins', '' ],
+      \ 'vimfiler': [ 'vimfiler', '%{vimfiler#get_status_string()}' ],
+      \ 'vimshell': ['vimshell','%{vimshell#get_status_string()}'],
+      \ }
+<
 * defines whether the preview window should be excluded from have its window
   statusline modified (may help with plugins which use the preview window
   heavily) >
   let g:airline_exclude_preview = 0
 <
-* disable the Airline customization for selective windows (this is a
+* disable the Airline customization for selected windows (this is a
   window-local variable so you can disable it per-window) >
   let w:airline_disabled = 1
 
@@ -431,7 +446,13 @@ ale <https://github.com/w0rp/ale>
 <
 * ale close_lnum_symbol >
   let airline#extensions#ale#close_lnum_symbol = ')'
-<
+
+-------------------------------------                       *airline-bookmark*
+vim-bookmark <https://github.com/MattesGroeger/vim-bookmarks>
+
+* enable/disable bookmark integration >
+  let g:airline#extensions#bookmark#enabled = 1
+
 -------------------------------------                       *airline-branch*
 vim-airline will display the branch-indicator together with the branch name in
 the statusline, if one of the following plugins is installed:
@@ -499,6 +520,16 @@ characters.
     endif
     return b:perforce_client
   endfunction
+>
+* configure additional vcs checks to run
+  By default, vim-airline will check if the current edited file is untracked
+  in the repository. If so, it will append the `g:airline_symbols.notexists`
+  symbol to the branch name.
+  In addition, it will check if the repository is clean, else it will append
+  the `g:airline_symbols.dirty` symbol to the branch name (if the current file
+  is not untracked). Configure, by setting the following variable: >
+
+  let g:airline#extensions#branch#vcs_checks = ['untracked', 'dirty']
 <
 -------------------------------------                   *airline-bufferline*
 vim-bufferline <https://github.com/bling/vim-bufferline>

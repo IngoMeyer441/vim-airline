@@ -64,19 +64,27 @@ function! airline#async#vcs_untracked(config, file, vcs)
   endif
 endfunction
 
-function! s:set_clean_variables(file, vcs)
+function! s:set_clean_variables(file, vcs, val)
   let var=getbufvar(fnameescape(a:file), 'buffer_vcs_config', {})
-  let var[a:vcs].dirty=1
-  call setbufvar(fnameescape(a:file), 'buffer_vcs_config', var)
-  unlet! b:airline_head
+  if has_key(var, a:vcs) && has_key(var[a:vcs], 'dirty') &&
+        \ type(getbufvar(fnameescape(a:file), 'buffer_vcs_config')) == type({})
+    let var[a:vcs].dirty=a:val
+    call setbufvar(fnameescape(a:file), 'buffer_vcs_config', var)
+    unlet! b:airline_head
+  endif
+endfunction
+
+function! s:set_clean_jobs_variable(vcs, file, id)
+  if !has_key(s:clean_jobs, a:vcs)
+    let s:clean_jobs[a:vcs] = {}
+  endif
+  let s:clean_jobs[a:vcs][a:file]=a:id
 endfunction
 
 function! s:on_exit_clean(...) dict abort
   let buf=self.buf
-  if !empty(buf)
-    call s:set_clean_variables(self.file, self.vcs)
-  endif
-  if has_key(get(s:clean_jobs, 'self.vcs', {}), self.file)
+  call s:set_clean_variables(self.file, self.vcs, !empty(buf))
+  if has_key(get(s:clean_jobs, self.vcs, {}), self.file)
     call remove(s:clean_jobs[self.vcs], self.file)
   endif
 endfunction
@@ -184,7 +192,7 @@ if v:version >= 800 && has("job")
           \ 'err_io':   'null',
           \ 'out_cb':   function('s:on_stdout', options),
           \ 'close_cb': function('s:on_exit_clean', options)})
-    let jobs[a:file] = id
+    call s:set_clean_jobs_variable(a:vcs, a:file, id)
   endfunction
 
   function! airline#async#vim_vcs_untracked(config, file)
@@ -307,7 +315,7 @@ elseif has("nvim")
       call remove(s:clean_jobs[a:vcs], a:file)
     endif
     let id = jobstart(cmd, config)
-    let s:clean_jobs[a:vcs][a:file] = id
+    call s:set_clean_jobs_variable(a:vcs, a:file, id)
   endfunction
 
 endif
@@ -349,8 +357,12 @@ endfunction
 
 function! airline#async#vim7_vcs_clean(cmd, file, vcs)
   " Vim pre 8, fallback using system()
-  let output=system(a:cmd)
-  if !empty(output)
-    call s:set_clean_variables(a:file, a:vcs)
+  " don't want to to see error messages
+  if g:airline#init#is_windows && &shell =~ 'cmd'
+    let cmd = a:cmd .' 2>nul'
+  else
+    let cmd = a:cmd .' 2>/dev/null'
   endif
+  let output=system(cmd)
+  call s:set_clean_variables(a:file, a:vcs, !empty(output))
 endfunction
