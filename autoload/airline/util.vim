@@ -11,6 +11,7 @@ let s:spc = g:airline_symbols.space
 let s:nomodeline = (v:version > 703 || (v:version == 703 && has("patch438"))) ? '<nomodeline>' : ''
 let s:has_strchars = exists('*strchars')
 let s:has_strcharpart = exists('*strcharpart')
+let s:focusgained_ignored = 0
 
 " TODO: Try to cache winwidth(0) function
 " e.g. store winwidth per window and access that, only update it, if the size
@@ -178,7 +179,7 @@ endfunction
 
 function! airline#util#themes(match)
   let files = split(globpath(&rtp, 'autoload/airline/themes/'.a:match.'*.vim'), "\n")
-  return sort(map(files, 'fnamemodify(v:val, ":t:r")') + ['random'])
+  return sort(map(files, 'fnamemodify(v:val, ":t:r")') + ('random' =~ a:match ? ['random'] : []))
 endfunction
 
 function! airline#util#stl_disabled(winnr)
@@ -190,3 +191,16 @@ function! airline#util#stl_disabled(winnr)
    \ airline#util#getwinvar(a:winnr, 'airline_disabled', 0) ||
    \ airline#util#getbufvar(winbufnr(a:winnr), 'airline_disable_statusline', 0)
 endfunction
+
+function! airline#util#ignore_next_focusgain()
+  let s:focusgained_ignored += 1
+endfunction
+
+function! airline#util#try_focusgained()
+  let s:focusgained_ignored -= 1
+  if s:focusgained_ignored < 0
+    let s:focusgained_ignored = 0
+  endif
+  return s:focusgained_ignored <= 0
+endfunction
+
