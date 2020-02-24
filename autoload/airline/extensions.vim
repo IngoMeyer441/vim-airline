@@ -35,17 +35,6 @@ let s:filetype_overrides = {
       \ 'vaffle' : [ 'Vaffle', '' ],
       \ }
 
-if airline#util#has_gina() && get(g:, 'airline#extensions#gina_status', 1)
-  " Gina needs the Vim 7.4.1898, which introduce the <mods> flag for custom commands
-  let s:filetype_overrides['gina-status'] = ['gina', '%{gina#component#repo#preset()}' ]
-  let s:filetype_overrides['diff'] = ['gina', '%{gina#component#repo#preset()}' ]
-  let s:filetype_overrides['gina-log'] = ['gina', '%{gina#component#repo#preset()}' ]
-  let s:filetype_overrides['gina-tag'] = ['gina', '%{gina#component#repo#preset()}' ]
-  let s:filetype_overrides['gina-branch'] = ['gina', '%{gina#component#repo#branch()}' ]
-  let s:filetype_overrides['gina-reflog'] = ['gina', '%{gina#component#repo#branch()}' ]
-  let s:filetype_overrides['gina-ls'] = ['gina', '%{gina#component#repo#branch()}' ]
-endif
-
 if get(g:, 'airline#extensions#nerdtree_statusline', 1)
   let s:filetype_overrides['nerdtree'] = [ get(g:, 'NERDTreeStatusline', 'NERD'), '' ]
 else
@@ -171,6 +160,11 @@ function! airline#extensions#load()
     call add(s:loaded_ext, 'denite')
   endif
 
+  if get(g:, 'loaded_gina', 0) && get(g:, 'airline#extensions#gina#enabled', 1)
+    call airline#extensions#gina#init(s:ext)
+    call add(s:loaded_ext, 'gina')
+  endif
+
   if exists(':NetrwSettings')
     call airline#extensions#netrw#init(s:ext)
     call add(s:loaded_ext, 'netrw')
@@ -290,7 +284,7 @@ function! airline#extensions#load()
   elseif (get(g:, 'airline#extensions#virtualenv#enabled', 1) && (exists(':VirtualEnvList')))
     call airline#extensions#virtualenv#init(s:ext)
     call add(s:loaded_ext, 'virtualenv')
-  elseif (isdirectory($VIRTUAL_ENV))
+  elseif (get(g:, 'airline#extensions#poetv#enabled', 1) && (isdirectory($VIRTUAL_ENV)))
     call airline#extensions#poetv#init(s:ext)
     call add(s:loaded_ext, 'poetv')
   endif
