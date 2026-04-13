@@ -203,6 +203,9 @@ function! s:airline_toggle()
         endif
       endif
     endif
+    if airline#util#has_multiline() && &statuslineopt !~ 'maxheight:'
+      set statuslineopt+=maxheight:2
+    endif
     if s:airline_initialized
       call s:on_window_changed('Init')
     endif
@@ -269,14 +272,23 @@ function! s:airline_extensions()
   echo printf("%-15s\t%s\t%s", "Extension", "Extern", "Status")
   echohl Normal
   let set=[]
+  let not_loaded=[]
   for ext in sort(files)
-    if index(set, ext) > -1
+    " prevent duplicates
+    if index(set + not_loaded, ext) > -1
       continue
     endif
     let indx=match(loaded, '^'.ext.'\*\?$')
-    let external = (indx > -1 && loaded[indx] =~ '\*$')
-    echo printf("%-15s\t%s\t%sloaded", ext, external, indx == -1 ? 'not ' : '')
+    if indx == -1
+      call add(not_loaded, ext)
+      continue
+    endif
     call add(set, ext)
+    let external=(loaded[indx] =~ '\*$')
+    echo printf("%-15s\t%s\tloaded", ext, external)
+  endfor
+  for ext in not_loaded
+    echo printf("%-15s\t%s\tnot loaded", ext, 0)
   endfor
 endfunction
 
